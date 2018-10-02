@@ -20,7 +20,6 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.properties.Delegates
 
-
 class MainActivity : AppCompatActivity() {
 
     private lateinit var context: Context
@@ -83,6 +82,24 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        override fun onMtuChanged(device: BluetoothDevice?, mtu: Int) {
+            Timber.i("onMtuChanged device: $device mtu: $mtu")
+            super.onMtuChanged(device, mtu)
+        }
+
+        override fun onConnectionStateChange(device: BluetoothDevice, status: Int, newState: Int) {
+            when (newState) {
+                BluetoothProfile.STATE_CONNECTED -> {
+                    Timber.i("BLE device connected: $device")
+//                    device.createBond()
+                }
+                BluetoothProfile.STATE_DISCONNECTED -> {
+                    Timber.i("BLE device disconnected: $device")
+//                    restartAdvertising()
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,6 +111,8 @@ class MainActivity : AppCompatActivity() {
         setupTimber()
 
         setupBLE()
+
+        startAdvertising()
 
         startBLEService()
     }
@@ -114,7 +133,9 @@ class MainActivity : AppCompatActivity() {
                 .apply {
                     name = "Things"
                 }
+    }
 
+    private fun startAdvertising() {
         // Some advertising settings. We don't set an advertising timeout
         // since our device is always connected to AC power.
         val settings = AdvertiseSettings.Builder()
